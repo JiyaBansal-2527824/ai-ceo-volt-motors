@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI CEO | Volt EV Motors</title>
+<style>
+:root{--navy:#101b2d;--cyan:#55d6d0;--lime:#c6f36b;--white:#f7fafc;--muted:#aab8c8;--line:rgba(255,255,255,.13)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--white);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at 85% 15%,rgba(85,214,208,.16),transparent 30%),radial-gradient(circle at 10% 90%,rgba(198,243,107,.10),transparent 32%),linear-gradient(135deg,#0b1422,var(--navy) 55%,#14253a);display:grid;place-items:center;padding:28px}
+.shell{width:min(1050px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:22px}.intro,.login{border:1px solid var(--line);background:rgba(255,255,255,.07);border-radius:24px;padding:clamp(26px,5vw,52px);box-shadow:0 24px 70px rgba(0,0,0,.22)}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.19em;text-transform:uppercase}h1{font-size:clamp(42px,6vw,68px);line-height:.98;letter-spacing:-.055em;margin:22px 0 18px}h1 span{color:var(--lime)}.lead{color:#c2cedb;line-height:1.7;max-width:470px;font-size:16px}.stats{display:flex;gap:28px;margin-top:44px;flex-wrap:wrap}.stat strong{display:block;font-size:26px;color:var(--lime)}.stat small{color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:10px}.login{align-self:center;background:rgba(13,27,44,.82)}h2{margin:0 0 8px;font-size:27px;letter-spacing:-.03em}.sub{margin:0 0 28px;color:var(--muted);line-height:1.5;font-size:14px}label{display:block;margin:18px 0 8px;color:#dce5ed;font-size:13px;font-weight:650}input{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:white;border-radius:11px;padding:14px 15px;font:inherit;outline:none}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(85,214,208,.12)}button{width:100%;margin-top:24px;border:0;border-radius:11px;padding:15px;color:#102033;background:var(--lime);font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.message{min-height:22px;margin-top:16px;font-size:13px;line-height:1.5;color:var(--muted)}.message.error{color:#ff9c9c}.message.success{color:var(--lime)}.welcome{display:none;margin-top:20px;padding:16px;border:1px solid rgba(198,243,107,.3);background:rgba(198,243,107,.07);border-radius:12px}.welcome strong{color:var(--lime)}.foot{margin-top:30px;color:#8092a6;font-size:11px}@media(max-width:760px){body{padding:16px}.shell{grid-template-columns:1fr}.intro{padding:30px}.stats{margin-top:25px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<section class="intro">
+<div class="eyebrow">Volt EV Motors · Executive Simulation</div>
+<h1>AI CEO<span>.</span><br>Run the<br>Company.</h1>
+<p class="lead">Every decision moves the business. Lead Volt EV Motors through market shifts, operational trade-offs and a high-stakes crisis. Your team’s performance will determine the company’s future.</p>
+<div class="stats"><div class="stat"><strong>15</strong><small>Leadership teams</small></div><div class="stat"><strong>4</strong><small>Decision periods</small></div><div class="stat"><strong>45 min</strong><small>Time limit</small></div></div>
+</section>
+<section class="login">
+<div class="eyebrow">Participant access</div><h2>Enter the boardroom</h2>
+<p class="sub">Sign in with the team number and access code provided by the organiser.</p>
+<form id="loginForm">
+<label for="teamNumber">Team number</label><input id="teamNumber" type="number" min="1" max="15" step="1" placeholder="Enter 1–15" required>
+<label for="passcode">Team access code</label><input id="passcode" type="password" placeholder="Enter your team code" autocomplete="current-password" required>
+<button id="loginButton" type="submit">Enter simulation →</button>
+</form>
+<div id="message" class="message" role="status" aria-live="polite"></div><div id="welcome" class="welcome"></div>
+<div class="foot">AI CEO: Run the Company · Volt EV Motors</div>
+</section></main>
+<script>
+const SUPABASE_URL="https://ogphkzbuachhlntyvywy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_R7_tlNHZUiGu_YWjOOQv4w_EXDXQpLd";
+const form=document.getElementById("loginForm"),button=document.getElementById("loginButton"),message=document.getElementById("message"),welcome=document.getElementById("welcome");
+form.addEventListener("submit",async event=>{
+ event.preventDefault();message.className="message";message.textContent="";welcome.style.display="none";
+ const team_number=Number(document.getElementById("teamNumber").value),passcode=document.getElementById("passcode").value.trim();
+ if(!Number.isInteger(team_number)||team_number<1||team_number>15||!passcode){message.className="message error";message.textContent="Enter a valid team number (1–15) and access code.";return}
+ button.disabled=true;button.textContent="Signing in…";
+ try{
+  const response=await fetch(`${SUPABASE_URL}/functions/v1/team-login`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":`Bearer ${SUPABASE_PUBLISHABLE_KEY}`},body:JSON.stringify({team_number,passcode})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||data.message||`Sign-in failed (${response.status}).`);
+  if(!data.session_token)throw new Error("The server response did not include a session token. Please contact the organiser.");
+  sessionStorage.setItem("volt_team_session",data.session_token);sessionStorage.setItem("volt_team_number",String(team_number));
+  message.className="message success";message.textContent="Sign-in successful.";
+  const progress=data.progress||{};welcome.innerHTML=`<strong>Welcome, Team ${team_number}.</strong><br>Your session is ready. Current stage: ${progress.current_stage??"1"}.`;welcome.style.display="block";
+ }catch(error){message.className="message error";message.textContent=error.message.includes("Failed to fetch")?"Could not connect. This may be a browser CORS setting on the login function; we can fix that next.":error.message}
+ finally{button.disabled=false;button.textContent="Enter simulation →"}
+});
+</script>
+</body></html>
